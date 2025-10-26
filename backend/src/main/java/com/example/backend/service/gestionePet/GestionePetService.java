@@ -6,8 +6,8 @@ import com.example.backend.dto.gestionePet.NewPetFormDTO;
 import com.example.backend.dto.gestionePet.PetResponseDTO;
 import com.example.backend.model.Pet;
 import com.example.backend.model.User;
-import com.example.backend.security.AuthHelper;
-import com.example.backend.security.JwtUtil;
+import com.example.backend.security.AuthContext;
+import com.example.backend.security.AuthenticatedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,31 +23,23 @@ public class GestionePetService {
     @Autowired
     private UserDAO userDAO;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private AuthHelper authHelper;
-
-    public PetResponseDTO creaPet(String token, NewPetFormDTO dto) throws IOException {
-        // 1. Verifica autenticazione
-        if (!authHelper.verificaAutenticazione(token)) {
+    public PetResponseDTO creaPet(NewPetFormDTO dto) throws IOException {
+        // 1. Recupera l’utente autenticato dal contesto
+        AuthenticatedUser currentUser = AuthContext.getCurrentUser();
+        if (currentUser == null) {
             throw new RuntimeException("Accesso non autorizzato");
         }
 
-        // 2. Estrai informazioni dal token
-        Long ownerId = jwtUtil.getId(token);
-        String role = jwtUtil.getRole(token);
-
-        // 3. Controllo ruolo
-        if (!"PROPRIETARIO".equals(role)) {
+        // 2. Controllo ruolo
+        if (!"PROPRIETARIO".equals(currentUser.getRole())) {
             throw new RuntimeException("Accesso negato: solo i proprietari possono creare un animale");
         }
 
-        // 4. Recupera utente proprietario
-        User owner = userDAO.findById(ownerId)
+        // 3. Recupera il proprietario dal DB
+        User owner = userDAO.findById(currentUser.getId())
                 .orElseThrow(() -> new RuntimeException("Proprietario non trovato"));
 
+        // 4. Crea il nuovo Pet
         Pet pet = new Pet();
         pet.setNome(dto.getNome());
         pet.setRazza(dto.getRazza());
@@ -58,7 +50,8 @@ public class GestionePetService {
         if (dto.getFoto() != null && !dto.getFoto().isEmpty()) {
             String contentType = dto.getFoto().getContentType();
             if (contentType == null ||
-                    !(contentType.equalsIgnoreCase("image/jpeg") || contentType.equalsIgnoreCase("image/png"))) {
+                    !(contentType.equalsIgnoreCase("image/jpeg") ||
+                            contentType.equalsIgnoreCase("image/png"))) {
                 throw new RuntimeException("Formato immagine non valido: sono ammessi solo JPEG o PNG");
             }
             pet.setFoto(dto.getFoto().getBytes());
@@ -79,23 +72,20 @@ public class GestionePetService {
     }
 
 
-    public List<PetResponseDTO> visualizzaMieiPet(String token) {
-        // 1. Verifica autenticazione
-        if (!authHelper.verificaAutenticazione(token)) {
-            throw new RuntimeException("Accesso non autorizzato: token mancante o non valido");
+    public List<PetResponseDTO> visualizzaMieiPet() {
+        // 1. Recupera l’utente autenticato
+        AuthenticatedUser currentUser = AuthContext.getCurrentUser();
+        if (currentUser == null) {
+            throw new RuntimeException("Accesso non autorizzato: nessun utente autenticato");
         }
 
-        // 2. Estrai info utente
-        Long ownerId = jwtUtil.getId(token);
-        String role = jwtUtil.getRole(token);
-
-        // 3. Controllo ruolo
-        if (!"PROPRIETARIO".equals(role)) {
+        // 2. Controllo ruolo
+        if (!"PROPRIETARIO".equals(currentUser.getRole())) {
             throw new RuntimeException("Accesso negato: solo i proprietari possono visualizzare i propri animali");
         }
 
-        // 4. Mappa in DTO con immagini Base64
-        return petDAO.findByOwnerId(ownerId)
+        // 3. Recupera i pet del proprietario
+        return petDAO.findByOwnerId(currentUser.getId())
                 .stream()
                 .map(p -> new PetResponseDTO(
                         p.getId(),
@@ -107,5 +97,4 @@ public class GestionePetService {
                 ))
                 .toList();
     }
-
 }

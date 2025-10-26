@@ -63,20 +63,14 @@ public class GestionePetController {
      * }
      * </pre>
      *
-     * @param authHeader header con il token JWT in formato "Bearer ..."
      * @param newPetFormDTO dati del pet (nome, razza, sesso, microchip, foto)
      * @return un oggetto {@link PetResponseDTO} con le informazioni del pet creato
      * @throws IOException se si verifica un errore nella lettura del file immagine
      * @see PetResponseDTO
      */
     @PostMapping(value = "/creaPet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<PetResponseDTO> creaPet(
-            @RequestHeader("Authorization") String authHeader,
-            @ModelAttribute NewPetFormDTO newPetFormDTO) throws IOException {
-
-        String token = authHeader.replace("Bearer ", "");
-
-        PetResponseDTO nuovoPet = gestionePetService.creaPet(token, newPetFormDTO);
+    public ResponseEntity<PetResponseDTO> creaPet(@ModelAttribute NewPetFormDTO newPetFormDTO) throws IOException {
+        PetResponseDTO nuovoPet = gestionePetService.creaPet(newPetFormDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuovoPet);
     }
 
@@ -119,17 +113,12 @@ public class GestionePetController {
      * ]
      * </pre>
      *
-     * @param authHeader header con il token JWT in formato "Bearer ..."
      * @return una lista di {@link PetResponseDTO} relativi al proprietario autenticato
      * @see PetResponseDTO
      */
     @GetMapping("/visualizzaPet")
-    public ResponseEntity<List<PetResponseDTO>> visualizzaMieiPet(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = authHeader.replace("Bearer ", "");
-
-        List<PetResponseDTO> pets = gestionePetService.visualizzaMieiPet(token);
+    public ResponseEntity<List<PetResponseDTO>> visualizzaMieiPet() {
+        List<PetResponseDTO> pets = gestionePetService.visualizzaMieiPet();
         return ResponseEntity.ok(pets);
     }
 }

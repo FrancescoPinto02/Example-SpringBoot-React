@@ -1,6 +1,7 @@
 package com.example.backend.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -35,8 +36,20 @@ public class JwtUtil {
                 .compact();
     }
 
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     // Estrae i claims
-    public Claims parseToken(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
@@ -45,11 +58,11 @@ public class JwtUtil {
     }
 
     // Recupera dati singoli
-    public Long getId(String token) { return parseToken(token).get("id", Long.class); }
-    public String getEmail(String token) { return parseToken(token).get("email", String.class); }
-    public String getRole(String token) { return parseToken(token).get("role", String.class); }
+    public Long getId(String token) { return extractAllClaims(token).get("id", Long.class); }
+    public String getEmail(String token) { return extractAllClaims(token).get("email", String.class); }
+    public String getRole(String token) { return extractAllClaims(token).get("role", String.class); }
 
     public boolean isExpired(String token) {
-        return parseToken(token).getExpiration().before(new Date());
+        return extractAllClaims(token).getExpiration().before(new Date());
     }
 }
