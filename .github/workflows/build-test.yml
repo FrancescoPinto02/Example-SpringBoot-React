@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build & Verify
+    name: Build & Verify Backend
     runs-on: ubuntu-latest
 
     steps:
@@ -24,21 +24,25 @@ jobs:
           java-version: 21
           cache: maven
 
-      # 3️⃣ Verifica del formato e dipendenze
-      - name: Build with Maven (compile only)
+      # 3️⃣ Build del backend
+      - name: Maven Build
+        working-directory: ./backend
         run: mvn -B clean compile
 
-      # 4️⃣ Esegui Checkstyle
+      # 4️⃣ Checkstyle
       - name: Run Checkstyle
+        working-directory: ./backend
         run: mvn -B checkstyle:check
 
-      # 5️⃣ Esegui i test
+      # 5️⃣ Test
       - name: Run Tests
+        working-directory: ./backend
         run: mvn -B test
 
-      # 6️⃣ (Opzionale) Genera report HTML di Checkstyle come artefatto
+      # 6️⃣ Report Checkstyle
       - name: Generate Checkstyle Report
         if: always()
+        working-directory: ./backend
         run: mvn -B checkstyle:checkstyle
 
       - name: Upload Checkstyle Report
@@ -46,4 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: checkstyle-report
-          path: target/site/checkstyle.html
+          path: backend/target/site/checkstyle.html
+
