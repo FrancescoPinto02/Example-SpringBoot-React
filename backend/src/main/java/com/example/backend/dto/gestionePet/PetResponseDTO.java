@@ -8,7 +8,7 @@ public class PetResponseDTO {
     private String razza;
     private String microchip;
     private String sesso;
-    private String fotoBase64; // 👈 nuova proprietà
+    private String fotoBase64;
 
     public PetResponseDTO(Long id, String razza, String nome, String microchip, String sesso, byte[] foto) {
         this.id = id;

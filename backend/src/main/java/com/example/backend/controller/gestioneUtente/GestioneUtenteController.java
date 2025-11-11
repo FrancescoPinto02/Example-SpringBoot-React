@@ -15,8 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/gestioneUtente")
 public class GestioneUtenteController {
+    private final GestioneUtenteService gestioneUtenteService;
+
     @Autowired
-    private GestioneUtenteService gestioneUtenteService;
+    public GestioneUtenteController(GestioneUtenteService gestioneUtenteService) {
+        this.gestioneUtenteService = gestioneUtenteService;
+    }
 
     /**
      * Registra un nuovo utente nel sistema e restituisce un token JWT valido.

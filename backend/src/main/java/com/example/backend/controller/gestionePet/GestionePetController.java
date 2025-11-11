@@ -2,7 +2,6 @@ package com.example.backend.controller.gestionePet;
 
 import com.example.backend.dto.gestionePet.NewPetFormDTO;
 import com.example.backend.dto.gestionePet.PetResponseDTO;
-import com.example.backend.model.Pet;
 import com.example.backend.service.gestionePet.GestionePetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,14 +11,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/gestionePet")
 public class GestionePetController {
 
+    private final GestionePetService gestionePetService;
+
     @Autowired
-    private GestionePetService gestionePetService;
+    public GestionePetController(GestionePetService gestionePetService) {
+        this.gestionePetService = gestionePetService;
+    }
 
     /**
      * Crea un nuovo animale domestico per l’utente autenticato.
@@ -48,7 +50,7 @@ public class GestionePetController {
      * razza=Labrador
      * microchip=ABC123
      * sesso=F
-     * foto=luna.jpg
+     * foto=dog1.jpg
      * </pre>
      *
      * <p><b>Esempio risposta:</b></p>

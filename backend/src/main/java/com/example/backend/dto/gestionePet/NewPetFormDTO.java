@@ -1,12 +1,33 @@
 package com.example.backend.dto.gestionePet;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 public class NewPetFormDTO {
+    @NotBlank(message = "Il nome del pet è obbligatorio")
+    @Size(max = 50, message = "Il nome non può superare i 50 caratteri")
     private String nome;
+
+    @NotBlank(message = "La razza è obbligatoria")
+    @Size(max = 50, message = "La razza non può superare i 50 caratteri")
     private String razza;
+
+    @NotBlank(message = "Il microchip è obbligatorio")
+    @Pattern(
+            regexp = "^[A-Za-z0-9]{10,15}$",
+            message = "Il microchip deve contenere tra 10 e 15 caratteri alfanumerici"
+    )
     private String microchip;
+
+    @NotBlank(message = "Il sesso è obbligatorio")
+    @Pattern(
+            regexp = "^(MASCHIO|FEMMINA)$",
+            message = "Il sesso deve essere 'MASCHIO' o 'FEMMINA'"
+    )
     private String sesso;
+
     private MultipartFile foto;
 
     public NewPetFormDTO(String nome, String razza, String microchip, String sesso, MultipartFile foto) {
