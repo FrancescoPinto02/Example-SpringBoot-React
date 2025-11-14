@@ -2,32 +2,44 @@ package com.example.backend.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 @Entity
 @Table(name = "pets")
 public class Pet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(nullable = false)
-    private String razza;
-
-    @Column(unique = true, nullable = false)
-    private String microchip;
-
-    @Column(nullable = false)
-    private String sesso; // es: "M" o "F"
+    @Column(name="n_microchip", nullable = false, unique = true)
+    private String nMicrochip;
 
     @Lob
     @Column(name = "foto", columnDefinition = "LONGBLOB")
     private byte[] foto;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    @ManyToOne //(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proprietario_id", nullable = false)
+    private Proprietario proprietario;
+
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RecordMedico> recordMedici = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "petsAssociati")
+    private List<Veterinario> veterinariAssociati = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NoteProprietario> note = new ArrayList<>();
+
+    @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL)
+    private LinkingCode linkingCode;
+
 
     public Pet() {
     }
@@ -48,28 +60,12 @@ public class Pet {
         this.nome = nome;
     }
 
-    public String getRazza() {
-        return razza;
+    public String getnMicrochip() {
+        return nMicrochip;
     }
 
-    public void setRazza(String razza) {
-        this.razza = razza;
-    }
-
-    public String getMicrochip() {
-        return microchip;
-    }
-
-    public void setMicrochip(String microchip) {
-        this.microchip = microchip;
-    }
-
-    public String getSesso() {
-        return sesso;
-    }
-
-    public void setSesso(String sesso) {
-        this.sesso = sesso;
+    public void setnMicrochip(String nMicrochip) {
+        this.nMicrochip = nMicrochip;
     }
 
     public byte[] getFoto() {
@@ -80,11 +76,43 @@ public class Pet {
         this.foto = foto;
     }
 
-    public User getOwner() {
-        return owner;
+    public Proprietario getProprietario() {
+        return proprietario;
     }
 
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void setProprietario(Proprietario proprietario) {
+        this.proprietario = proprietario;
+    }
+
+    public List<Veterinario> getVeterinariAssociati() {
+        return veterinariAssociati;
+    }
+
+    public void setVeterinariAssociati(List<Veterinario> veterinariAssociati) {
+        this.veterinariAssociati = veterinariAssociati;
+    }
+
+    public List<NoteProprietario> getNote() {
+        return note;
+    }
+
+    public void setNote(List<NoteProprietario> note) {
+        this.note = note;
+    }
+
+    public LinkingCode getLinkingCode() {
+        return linkingCode;
+    }
+
+    public void setLinkingCode(LinkingCode linkingCode) {
+        this.linkingCode = linkingCode;
+    }
+
+    public List<RecordMedico> getRecordMedici() {
+        return recordMedici;
+    }
+
+    public void setRecordMedici(List<RecordMedico> recordMedici) {
+        this.recordMedici = recordMedici;
     }
 }

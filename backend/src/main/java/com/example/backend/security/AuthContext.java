@@ -2,17 +2,17 @@ package com.example.backend.security;
 
 public class AuthContext {
 
-    private static final ThreadLocal<AuthenticatedUser> currentUser = new ThreadLocal<>();
+    private static final ThreadLocal<AuthenticatedUser> CURRENT_USER = new ThreadLocal<>();
 
     public static void setCurrentUser(AuthenticatedUser user) {
-        currentUser.set(user);
+        CURRENT_USER.set(user);
     }
 
     public static AuthenticatedUser getCurrentUser() {
-        return currentUser.get();
+        return CURRENT_USER.get();
     }
 
     public static void clear() {
-        currentUser.remove();
+        CURRENT_USER.remove();
     }
 }

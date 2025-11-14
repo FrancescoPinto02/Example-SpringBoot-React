@@ -1,9 +1,9 @@
 package com.example.backend;
 
-import com.example.backend.model.Pet;
-import com.example.backend.model.User;
+import com.example.backend.model.*;
 import com.example.backend.repository.PetRepository;
-import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.ProprietarioRepository;
+import com.example.backend.repository.VeterinarioRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -13,19 +13,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Date;
 
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
-    private final UserRepository userRepository;
+    private final ProprietarioRepository proprietarioRepository;
+    private final VeterinarioRepository veterinarioRepository;
     private final PetRepository petRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.db.reset:false}")
     private boolean resetDatabase;
 
-    public DatabaseSeeder(UserRepository userRepository, PetRepository petRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public DatabaseSeeder(ProprietarioRepository proprietarioRepository, VeterinarioRepository veterinarioRepository, PetRepository petRepository, PasswordEncoder passwordEncoder) {
+        this.proprietarioRepository = proprietarioRepository;
+        this.veterinarioRepository = veterinarioRepository;
         this.petRepository = petRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -34,70 +37,92 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         if (resetDatabase) {
-            System.out.println("⚠️  app.db.reset=true → Pulizia del database in corso...");
-            petRepository.deleteAll();
-            userRepository.deleteAll();
+            System.out.println("⚠️ Pulizia del database in corso... ⚠️");
+            proprietarioRepository.deleteAll();
+            veterinarioRepository.deleteAll();
         }
 
-        if (userRepository.count() == 0) {
+        if (proprietarioRepository.count() == 0) {
             System.out.println("🚀 Popolamento iniziale del database...");
 
             // --- UTENTI ---
-            User mario = new User();
+            Proprietario mario = new Proprietario();
             mario.setEmail("mario.rossi@example.com");
             mario.setPassword(passwordEncoder.encode("Password123"));
             mario.setNome("Mario");
             mario.setCognome("Rossi");
-
-            User lucia = new User();
-            lucia.setEmail("lucia.bianchi@example.com");
-            lucia.setPassword(passwordEncoder.encode("Password123"));
-            lucia.setNome("Lucia");
-            lucia.setCognome("Bianchi");
-
-            User admin = new User();
-            admin.setEmail("admin@example.com");
-            admin.setPassword(passwordEncoder.encode("Password123"));
-            admin.setNome("Admin");
-            admin.setCognome("System");
-
-            userRepository.save(mario);
-            userRepository.save(lucia);
-            userRepository.save(admin);
+            proprietarioRepository.save(mario);
 
             // --- PETS ---
             Pet dog = new Pet();
             dog.setNome("Fido");
-            dog.setRazza("Labrador");
-            dog.setMicrochip("123ABC456");
-            dog.setSesso("M");
+            dog.setnMicrochip("123ABC456A");
             dog.setFoto(loadImage("images/dog1.jpg"));
-            dog.setOwner(mario);
+            dog.setProprietario(mario);
             mario.getPets().add(dog);
             petRepository.save(dog);
 
-            Pet cat = new Pet();
-            cat.setNome("Micia");
-            cat.setRazza("Siamese");
-            cat.setMicrochip("789XYZ123");
-            cat.setSesso("F");
-            cat.setFoto(loadImage("images/dog2.jpg"));
-            cat.setOwner(lucia);
-            lucia.getPets().add(cat);
-            petRepository.save(cat);
+            Veterinario vet = new Veterinario();
+            vet.setNome("Giovanni");
+            vet.setCognome("Bianchi");
+            vet.setEmail("giovanni.vet@example.com");
+            vet.setPassword(passwordEncoder.encode("Password123"));
+            vet.getPetsAssociati().add(dog);
+            dog.getVeterinariAssociati().add(vet);
+            veterinarioRepository.save(vet);
 
-            Pet rabbit = new Pet();
-            rabbit.setNome("Bunny");
-            rabbit.setRazza("Coniglio Nano");
-            rabbit.setMicrochip("456DEF789");
-            rabbit.setSesso("M");
-            rabbit.setFoto(loadImage("images/dog1.jpg"));
-            rabbit.setOwner(lucia);
-            lucia.getPets().add(rabbit);
-            petRepository.save(rabbit);
+            // ============================================================
+            //          AGGIUNTA RECORD MEDICI DI TEST
+            // ============================================================
+
+            // 1️⃣ Visita medica
+            VisitaMedica visita = new VisitaMedica();
+            visita.setNome("Controllo annuale");
+            visita.setDescrizione("Visita di controllo generale.");
+            visita.setData(new Date());
+            visita.setPet(dog);
+            visita.setVeterinario(vet);
+            dog.getRecordMedici().add(visita);
+
+            // 2️⃣ Vaccinazione
+            Vaccinazione vaccino = new Vaccinazione();
+            vaccino.setNome("Vaccino Rabbia");
+            vaccino.setTipologia("Antirabbica");
+            vaccino.setDataDiSomministrazione(new Date());
+            vaccino.setDoseSomministrata(1.0f);
+            vaccino.setViaDiSomministrazione(Vaccinazione.Somministrazione.INTRAMUSCOLARE);
+            vaccino.setEffettiCollaterali("Nessuno");
+            vaccino.setRichiamoPrevisto(new Date(System.currentTimeMillis() + 31536000000L)); // +1 anno
+            vaccino.setPet(dog);
+            vaccino.setVeterinario(vet);
+            dog.getRecordMedici().add(vaccino);
+
+            // 3️⃣ Patologia
+            Patologia patologia = new Patologia();
+            patologia.setNome("Dermatite");
+            patologia.setDataDiDiagnosi(new Date());
+            patologia.setSintomiOsservati("Arrossamento e prurito");
+            patologia.setDiagnosi("Dermatite atopica");
+            patologia.setTerapiaAssociata("Shampoo medicato e antistaminici");
+            patologia.setPet(dog);
+            patologia.setVeterinario(vet);
+            dog.getRecordMedici().add(patologia);
+
+            // 4️⃣ Terapia
+            Terapia terapia = new Terapia();
+            terapia.setNome("Terapia antibiotica");
+            terapia.setDescrizione("Amoxicillina 250mg");
+            terapia.setDataInizio(new Date());
+            terapia.setDataFine(new Date(System.currentTimeMillis() + 7 * 86400000L)); // +7 giorni
+            terapia.setPet(dog);
+            terapia.setVeterinario(vet);
+            dog.getRecordMedici().add(terapia);
+
+            // Salva tutto
+            petRepository.save(dog);
 
 
-            System.out.println("✅ Database popolato con utenti e pet di esempio.");
+            System.out.println("✅ Database popolato");
         } else {
             System.out.println("ℹ️ Database già popolato, nessuna azione necessaria.");
         }

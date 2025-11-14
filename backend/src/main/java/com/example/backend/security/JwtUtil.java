@@ -19,7 +19,7 @@ public class JwtUtil {
     private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     // Generazione token con informazioni extra
-    public String generateToken(Long id, String email, String role) {
+    public String generateToken(Long id, String email, Role role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + EXPIRATION_MS);
 
@@ -30,7 +30,7 @@ public class JwtUtil {
                 .addClaims(Map.of(
                         "id", id,
                         "email", email,
-                        "role", role
+                        "role", role.name()
                 ))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -58,9 +58,18 @@ public class JwtUtil {
     }
 
     // Recupera dati singoli
-    public Long getId(String token) { return extractAllClaims(token).get("id", Long.class); }
-    public String getEmail(String token) { return extractAllClaims(token).get("email", String.class); }
-    public String getRole(String token) { return extractAllClaims(token).get("role", String.class); }
+    public Long getId(String token) {
+        return extractAllClaims(token).get("id", Long.class);
+    }
+
+    public String getEmail(String token) {
+        return extractAllClaims(token).get("email", String.class);
+    }
+
+    public Role getRole(String token) {
+        String roleStr = extractAllClaims(token).get("role", String.class);
+        return Role.valueOf(roleStr); // converte stringa in enum
+    }
 
     public boolean isExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());

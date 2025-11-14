@@ -2,12 +2,9 @@ package com.example.backend.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -51,7 +48,7 @@ public class JwtAuthFilter extends HttpFilter {
         // Estrai info utente
         Long userId = jwtUtil.getId(token);
         String email = jwtUtil.getEmail(token);
-        String role = jwtUtil.getRole(token);
+        Role role = jwtUtil.getRole(token);
 
         AuthContext.setCurrentUser(new AuthenticatedUser(userId, email, role));
 

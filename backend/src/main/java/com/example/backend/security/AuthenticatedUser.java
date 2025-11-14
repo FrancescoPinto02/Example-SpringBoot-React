@@ -3,9 +3,9 @@ package com.example.backend.security;
 public class AuthenticatedUser {
     private final Long id;
     private final String email;
-    private final String role;
+    private final Role role;
 
-    public AuthenticatedUser(Long id, String email, String role) {
+    public AuthenticatedUser(Long id, String email, Role role) {
         this.id = id;
         this.email = email;
         this.role = role;
@@ -13,5 +13,5 @@ public class AuthenticatedUser {
 
     public Long getId() { return id; }
     public String getEmail() { return email; }
-    public String getRole() { return role; }
+    public Role getRole() { return role; }
 }
