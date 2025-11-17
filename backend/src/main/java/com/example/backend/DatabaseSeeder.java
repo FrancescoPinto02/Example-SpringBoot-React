@@ -1,9 +1,9 @@
 package com.example.backend;
 
-import com.example.backend.model.Pet;
-import com.example.backend.model.User;
-import com.example.backend.repository.PetRepository;
-import com.example.backend.repository.UserRepository;
+import com.example.backend.gestionePet.entity.Pet;
+import com.example.backend.gestioneUtente.entity.User;
+import com.example.backend.gestionePet.repository.PetRepository;
+import com.example.backend.gestioneUtente.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
